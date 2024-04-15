@@ -1,0 +1,384 @@
+//「 ดึงข้อมูลมาจากชีทชื่อ SETTING 」
+    let file = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SETTING');  // เป็นการอ้างอิงแหล่งถึงไฟล์ปัจจุบันที่ใช้งานอยู่ ในชีทที่ชื่อว่า "SETTING"
+    let file_id = file.getRange('C5').getValue();                                // ข้อมูลชีทไอดี > ดึงมาจากเซล์ C5
+    let token_line = file.getRange('C6').getValue();                             // ข้อมูลโทเค่น > ดึงมาจากเซล์ C6
+
+    let CHANNEL_ACCESS_TOKEN = token_line;
+    let line_endpoint = 'https://api.line.me/v2/bot/message/reply';
+
+    let data_sheet = SpreadsheetApp.openById(file_id).getSheets()[0]             // อ้างอิงจากโค้ดบรรทัดที่ 2 บรรทัดนี้จะเป็นการบอกตำแหน่งของชีทที่เราจะไปดึงข้อมูลมา
+    let data_table = data_sheet.getRange(2, 1, data_sheet.getLastRow(), data_sheet.getLastColumn()).getValues(); // บอกขอบเขตของฐานข้อมูลที่เราจะไปดึงข้อมูลมา
+    let result = 'ไม่พบข้อมูลที่ค้นหา';  // กรณีไม่มีข้อมูลในฐานข้อมูล ให้แสดงคำว่า 'ไม่พบข้อมูลที่ค้นหา'#A1
+// จบ SETTING 
+
+
+//「 ฟังก์ชั่น doPost 」
+  function doPost(e) {
+    let json = JSON.parse(e.postData.contents);     // เป็นการแปลข้อความ (จากภาษา JSON เป็นภาษา JavaScript)
+    let message = json.events[0].message.text;      // เป็นการหยิบข้อความที่แปลมาเปิดอ่าน
+    let reply_token = json.events[0].replyToken;    // เป็นการระบุว่าจะให้ส่งผลลัพธ์ส่งไปที่ไหน ในที่นี้ให้ส่งไปที่โทเค่น (Token เปรียบเสมือน ID CARD หรือ PASSPORT)
+
+    for (let i = 0; i < data_table.length; i++) 
+    {
+      if (data_table[i][0] == message) // ถ้าค่าที่ถูกส่งมามีค่าตรงกับข้อมูลใน Google Sheet แถวที่ i คอลัมน์ A 
+                                       // (คอลัมน์ A=0, B=1, C=2 ไล่ไปเรื่อย ๆ อยู่ที่ว่าคำที่ต้องการค้นหาอยู่คอลัมน์ไหน) 
+          {                      
+            i = i + 2;
+            let column_A = data_sheet.getRange(i, 1).getValue();   // รหัสผู้ใช้ 
+            let column_B = data_sheet.getRange(i, 2).getValue();   // รหัสพนักงาน 
+            let column_C = data_sheet.getRange(i, 3).getValue();   // ชื่อ-สกุล 
+            let column_D = data_sheet.getRange(i, 4).getValue();   // หน้าที่ 
+            let column_E = data_sheet.getRange(i, 5).getValue();   // ตำแหน่ง 
+            let column_F = data_sheet.getRange(i, 6).getValue();   // วันที่เข้างาน            
+            let column_G = data_sheet.getRange(i, 7).getValue();   // อายุงาน 
+            let column_H = data_sheet.getRange(i, 8).getValue();   // ลาพักร้อน 
+            let column_I = data_sheet.getRange(i, 9).getValue();   // ลากิจ 
+            let column_J = data_sheet.getRange(i, 10).getValue();  // ลาป่วย 
+            let column_K = data_sheet.getRange(i, 11).getValue();  // ลิ้งค์รูปภาพ 
+            let column_L = data_sheet.getRange(i, 12).getValue();  // อายุ 
+
+            let date = new Date(column_F);                                       // เป็นการแก้ปัญหาการแสดงผลวันที่ใน flex (บางเครื่องอาจจะไม่พบปัญหานี้)
+                date.setDate(date.getDate() + 1);                                // เป็นการแก้ปัญหาการแสดงผลวันที่ใน flex (บางเครื่องอาจจะไม่พบปัญหานี้)
+            let formattedDate = Utilities.formatDate(date, "GMT", "dd/MM/yyyy"); // เป็นการแก้ปัญหาการแสดงผลวันที่ใน flex (บางเครื่องอาจจะไม่พบปัญหานี้)
+                   
+            result = 
+
+                    /* ▰▱▰▱▰▱▰▱ 🌔 เริ่มต้น Flex-simulator (🚩START) 🌔 ▰▱▰▱▰▱▰▱ */ 
+                     {
+                        "type": "bubble",
+                        "size": "mega",//ขนาดของการ์ด flex มีให้เลือกดังนี้ เรียงจากใหญ่ไปเล็ก giga, mega(default), kilo, hecto, deca, micro, nano
+                        "hero": {
+                          "type": "box",
+                          "layout": "vertical",
+                          "contents": [
+                            {
+                              "type": "image",
+                              "url": "https://img5.pic.in.th/file/secure-sv1/IMG_0137003.jpeg", // ลิ้งค์ Image COVER 
+                              "size": "full",
+                              "aspectMode": "cover",
+                              "aspectRatio": "10:8"
+                            },
+                            {
+                              "type": "box",
+                              "layout": "vertical",
+                              "contents": [
+                                {
+                                  "type": "image",
+                                  "url": column_K,
+                                  "size": "5xl", //ขนาดรูปโปรไฟล์ เรียงจากเล็กไปใหญ่ xxs, xs, sm, md, lg, xl, xxl, 3xl, 4xl, 5xl, full
+                                  "position": "relative"
+                                }
+                              ],
+                              "position": "absolute",
+                              "offsetTop": "xxl",
+                              "paddingTop": "xxl",
+                              "alignItems": "center",
+                              "width": "300px"
+                            },
+                            {
+                              "type": "box",
+                              "layout": "vertical",
+                              "contents": [
+                                {
+                                  "type": "text",
+                                  "text": column_C,
+                                  "color": "#45919d",
+                                  "align": "center",
+                                  "size": "xl",
+                                  "weight": "bold"
+                                }
+                              ],
+                              "position": "relative"
+                            }
+                          ]
+                        },
+                        "body": {
+                          "type": "box",
+                          "layout": "vertical",
+                          "contents": [
+                            {
+                              "type": "text",
+                              "text": column_E,
+                              "align": "center",
+                              "weight": "bold",
+                              "color": "#be8c57"
+                            },
+                            {
+                              "type": "text",
+                              "text": "-----------------------------",
+                              "align": "center",
+                              "color": "#c3c1bf"
+                            },
+                            {
+                              "type": "box",
+                              "layout": "horizontal",
+                              "contents": [
+                                {
+                                  "type": "text",
+                                  "text": ""+column_L,
+                                  "align": "center",
+                                  "size": "xl",
+                                  "weight": "bold",
+                                  "color": "#45919d"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": ""+column_G,
+                                  "align": "center",
+                                  "size": "xl",
+                                  "weight": "bold",
+                                  "color": "#45919d"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": column_B,
+                                  "align": "center",
+                                  "size": "xl",
+                                  "weight": "bold",
+                                  "color": "#45919d"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "box",
+                              "layout": "horizontal",
+                              "contents": [
+                                {
+                                  "type": "text",
+                                  "text": "Age",
+                                  "align": "center",
+                                  "size": "sm",
+                                  "color": "#45919d"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": "Period of emp.",
+                                  "align": "center",
+                                  "size": "sm",
+                                  "color": "#45919d",
+                                  "adjustMode": "shrink-to-fit"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": "Code",
+                                  "align": "center",
+                                  "size": "sm",
+                                  "color": "#45919d"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "box",
+                              "layout": "vertical",
+                              "contents": [
+                                
+                              // หน้าที่
+                                {
+                                  "type": "box",
+                                  "layout": "horizontal",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "หน้าที่",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#FFFFFF"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": column_D,
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#e9bf85"
+                                    }
+                                  ],
+                                  "margin": "md",
+                                  "borderWidth": "light",
+                                  "cornerRadius": "xl",
+                                  "backgroundColor": "#404143",
+                                  "height": "36px"
+                                },
+                              // หน้าที่
+
+                              // วันที่เข้างาน
+                                {
+                                  "type": "box",
+                                  "layout": "horizontal",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "วันที่เข้างาน",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#FFFFFF",
+                                      "adjustMode": "shrink-to-fit"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": ""+formattedDate,
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#e9bf85"
+                                    }
+                                  ],
+                                  "margin": "md",
+                                  "borderWidth": "light",
+                                  "cornerRadius": "xl",
+                                  "backgroundColor": "#404143",
+                                  "height": "36px"
+                                },
+                              // วันที่เข้างาน
+                              
+                              // พักร้อน-คงเหลือ 
+                                {
+                                  "type": "box",
+                                  "layout": "horizontal",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "พักร้อน-คงเหลือ",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#FFFFFF",
+                                      "adjustMode": "shrink-to-fit"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": ""+column_H+" วัน",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#a5eeee"
+                                    }
+                                  ],
+                                  "margin": "md",
+                                  "borderWidth": "light",
+                                  "cornerRadius": "xl",
+                                  "backgroundColor": "#404143",
+                                  "height": "36px"
+                                },
+                              // พักร้อน-คงเหลือ 
+
+                              // ลากิจ-คงเหลือ
+                                {
+                                  "type": "box",
+                                  "layout": "horizontal",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "ลากิจ-คงเหลือ",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#FFFFFF",
+                                      "adjustMode": "shrink-to-fit"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": ""+column_I+" วัน",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#a5eeee"
+                                    }
+                                  ],
+                                  "margin": "md",
+                                  "borderWidth": "light",
+                                  "cornerRadius": "xl",
+                                  "backgroundColor": "#404143",
+                                  "height": "36px"
+                                },
+                              // ลากิจ-คงเหลือ
+
+                              // ลาป่วย-คงเหลือ 
+                                {
+                                  "type": "box",
+                                  "layout": "horizontal",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "ลาป่วย-คงเหลือ",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#FFFFFF",
+                                      "adjustMode": "shrink-to-fit"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": ""+column_J+" วัน",
+                                      "gravity": "center",
+                                      "offsetStart": "md",
+                                      "color": "#a5eeee"
+                                    }
+                                  ],
+                                  "margin": "md",
+                                  "borderWidth": "light",
+                                  "cornerRadius": "xl",
+                                  "backgroundColor": "#404143",
+                                  "height": "36px"
+                                },
+                              // ลาป่วย-คงเหลือ 
+
+                              ]
+                            },
+                            {
+                              "type": "separator",
+                              "margin": "lg"
+                            },
+                            {
+                              "type": "box",
+                              "layout": "vertical",
+                              "contents": [
+                                {
+                                  "type": "text",
+                                  "text": "Designed by Sine",
+                                  "align": "center",
+                                  "margin": "md",
+                                  "adjustMode": "shrink-to-fit",
+                                  "color": "#c3c3c3"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    /* ▰▱▰▱▰▱▰▱ 🌒 สิ้นสุด Flex-simulator (🏴󠁧󠁢󠁥󠁮󠁧󠁿STOP)  🌒 ▰▱▰▱▰▱▰▱ */ 
+          }; 
+    };
+
+
+    if (result == 'ไม่พบข้อมูลที่ค้นหา') { // คำที่ต้องการให้แสดงผลเมื่อไม่มีข้อมลในฐาน #A1
+      UrlFetchApp.fetch(line_endpoint, {
+        'headers': {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN,
+        },
+        'method': 'post',
+        'payload': JSON.stringify({
+          'replyToken': reply_token,
+          'messages': [{
+            'type': 'text',
+            'text': result
+          }],
+        }),
+      });
+    }
+    else {
+      UrlFetchApp.fetch(line_endpoint, {
+        'headers': {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN,
+        },
+        'method': 'post',
+        'payload': JSON.stringify({
+          'replyToken': reply_token,
+          'messages': [{
+            'type': 'flex',
+            'altText': 'HR Report',
+            'contents': result
+          }],
+        }),
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ 'content': 'post ok' })).setMimeType(ContentService.MimeType.JSON); 
+          // เป็นการสร้าง Output เป็นข้อความ และส่งข้อความกลับไปเป็น JSON
+  }
+// จบฟังก์ชั่น doPost 
+
